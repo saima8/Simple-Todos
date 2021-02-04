@@ -11,11 +11,7 @@ export const TaskForm = ({user}) => {
 
     if (!task) return;
 
-    TasksCollection.insert({
-        text: text.trim(),
-        createdAt: new Date(),
-        userId: user._id
-    })
+    MediaStreamError.call('tasks.insert', text);
 
     setText('');
 
