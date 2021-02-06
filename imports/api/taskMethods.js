@@ -1,41 +1,55 @@
-import {check} from 'meteor/check'
-import {TasksCollection} from '../db/TasksCollection'
+import { check } from 'meteor/check';
+import { TasksCollection } from '/imports/db/TasksCollection';
 
 Meteor.methods({
-    'tasks.insert'(text){
-        check(text, String);
+  'tasks.insert'(text) {
+    check(text, String);
 
-        if(!this.userID){
-            throw new Meteor.Error ('Not authorized');
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized.');
+    }
 
-        }
-        TasksCollection.insert({
-            text,
-            createdAt: new Date,
-            userID: this.userID,
-        })
-    },
-    'tasks.remove'(taskId){
-        check(taskId, String);
+    TasksCollection.insert({
+      text,
+      createdAt: new Date(),
+      userId: this.userId,
+    });
+  },
 
-        if (!this.userID){
-            throw new Meteor.Error('Not authorized.');
-        }
-        TasksCollection.remove(taskId);
+  'tasks.remove'(taskId) {
+    check(taskId, String);
 
-    },
-    'tasks.setIsChecked'(taskId, isChecked) {
-        check(taskId, String);
-        check(isChecked, Boolean);
-     
-        if (!this.userId) {
-          throw new Meteor.Error('Not authorized.');
-        }
-     
-        TasksCollection.update(taskId, {
-          $set: {
-            isChecked
-          }
-        });
-      }
-})
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized.');
+    }
+
+    const task = TasksCollection.findOne({ _id: taskId, userId: this.userId });
+
+    if (!task) {
+      throw new Meteor.Error('Access denied.');
+    }
+
+    TasksCollection.remove(taskId);
+  },
+
+  'tasks.setIsChecked'(taskId, isChecked) {
+    check(taskId, String);
+    check(isChecked, Boolean);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized.');
+    }
+
+    const task = TasksCollection.findOne({ _id: taskId, userId: this.userId });
+
+    if (!task) {
+      throw new Meteor.Error('Access denied.');
+    }
+
+    TasksCollection.update(taskId, {
+      $set: {
+        isChecked,
+      },
+    });
+  },
+});
